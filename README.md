@@ -1,3 +1,1 @@
-# TwoTechArch
-
-Serverless Swagger UI for AWS API Gateway
+# Serverless Swagger UI for AWS API Gateway
