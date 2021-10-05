@@ -4,6 +4,21 @@ plugins:
   - serverless-offline
   - serverless-scriptable-plugin
   - serverless-s3-deploy
+
+custom:
+  scriptHooks:
+    after:aws:deploy:deploy:updateStack:
+      - webpack --mode production --progress
+
+  assets:
+    auto: true
+    targets:
+      - bucket: SwaggerBucket
+        files:
+          - source: dist
+            empty: true
+            globs: '**/*'
+
 package:
   individually: true
   excludeDevDependencies: false
@@ -45,3 +60,8 @@ functions:
             statusCodes:
               201:
                 pattern: ''
+
+resources:
+  Resources:
+    SwaggerBucket:
+      Type: AWS::S3::Bucket
