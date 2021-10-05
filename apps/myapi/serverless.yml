@@ -2,6 +2,8 @@ service: myapi
 frameworkVersion: '>=1.1.0'
 plugins:
   - serverless-offline
+  - serverless-scriptable-plugin
+  - serverless-s3-deploy
 package:
   individually: true
   excludeDevDependencies: false
