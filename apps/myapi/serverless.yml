@@ -8,6 +8,7 @@ package:
 provider:
   name: aws
   region: us-east-2
+  stage: ${opt:stage, 'dev'}
 
   runtime: nodejs10.x
 functions:
@@ -16,4 +17,29 @@ functions:
     events:
       - http:
           path: hello-world
-          method: get
+          method: GET
+          cors: true
+          integration: mock
+          request:
+            template:
+              application/json: '{"statusCode": 200}'
+          response:
+            template: >
+              {
+                "greeting": "Hello $input.params('name')!"
+              }
+            statusCodes:
+              201:
+                pattern: ''
+      - http:
+          path: hello-world
+          cors: true
+          method: POST
+          integration: mock
+          request:
+            template:
+              application/json: '{"statusCode": 200}'
+          response:
+            statusCodes:
+              201:
+                pattern: ''

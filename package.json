@@ -8,7 +8,9 @@
     "test": "nx test"
   },
   "private": true,
-  "dependencies": {},
+  "dependencies": {
+    "swagger-ui-dist": "^3.52.3"
+  },
   "devDependencies": {
     "@flowaccount/nx-serverless": "*",
     "@nrwl/cli": "12.9.0",
