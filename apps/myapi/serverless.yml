@@ -4,6 +4,7 @@ plugins:
   - serverless-offline
   - serverless-scriptable-plugin
   - serverless-s3-deploy
+  - serverless-cloudformation-sub-variables
 
 custom:
   scriptHooks:
@@ -113,3 +114,78 @@ resources:
       Properties:
         CloudFrontOriginAccessIdentityConfig:
           Comment: 'Access #{SwaggerBucket} bucket'
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: swaggerui
+        Schema:
+          - Name: email
+            Required: true
+            Mutable: true
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: true
+
+    UserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      Properties:
+        UserPoolId: UserPool
+        Domain: myapi-swaggerui
+
+    SwaggerUIAppClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: SwaggerUI
+        UserPoolId: UserPool
+        GenerateSecret: false
+        SupportedIdentityProviders:
+          - COGNITO
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthFlows:
+          - code
+        AllowedOAuthScopes:
+          - email
+          - openid
+        CallbackURLs:
+          - 'https://#{SwaggerDistribution.DomainName}'
+        LogoutURLs:
+          - 'https://#{SwaggerDistribution.DomainName}'
+
+    SwaggerUIIdentityProvider:
+      Type: AWS::Cognito::IdentityPool
+      Properties:
+        IdentityPoolName: swaggerui
+        CognitoIdentityProviders:
+          - ProviderName: 'cognito-idp.#{AWS::Region}.amazonaws.com/#{UserPool}'
+            ClientId: SwaggerUIAppClient
+        AllowUnauthenticatedIdentities: false
+
+    SwaggerUIIdentityProviderRoles:
+      Type: AWS::Cognito::IdentityPoolRoleAttachment
+      Properties:
+        IdentityPoolId: SwaggerUIIdentityProvider
+        Roles:
+          authenticated: SwaggerUIAuthRole.Arn
+
+    SwaggerUIAuthRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Federated: cognito-identity.amazonaws.com
+              Action: sts:AssumeRoleWithWebIdentity
+              Condition:
+                StringEquals:
+                  cognito-identity.amazonaws.com:aud: SwaggerUIIdentityProvider
+                ForAnyValue:StringLike:
+                  cognito-identity.amazonaws.com:amr: authenticated
+        Policies:
+          - PolicyName: api-gateway
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action: apigateway:GET
+                  Resource: 'arn:aws:apigateway:#{AWS::Region}::/restapis/#{ApiGatewayRestApi}/stages/${self:provider.stage}/exports/*'
