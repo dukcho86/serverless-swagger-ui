@@ -7,15 +7,19 @@ plugins:
   - serverless-cloudformation-sub-variables
 
 custom:
+  project: myapi
+  baseName: ${self:custom.project}-${self:provider.stage}-${self:service}
+
   scriptHooks:
     after:aws:deploy:deploy:updateStack:
-      - generateConfigFile.js
       - webpack --mode production --progress
+      - generateConfigFile.js
 
   assets:
     auto: true
     targets:
-      - bucket: SwaggerBucket
+      - bucket:
+          Ref: SwaggerBucket
         files:
           - source: dist
             empty: true
@@ -28,6 +32,7 @@ provider:
   name: aws
   region: us-east-2
   stage: ${opt:stage, 'dev'}
+  stackName: ${self:custom.baseName}
 
   runtime: nodejs10.x
 functions:
@@ -67,6 +72,7 @@ resources:
   Resources:
     SwaggerBucket:
       Type: AWS::S3::Bucket
+
     SwaggerDistribution:
       Type: AWS::CloudFront::Distribution
       Properties:
@@ -101,24 +107,27 @@ resources:
     SwaggerBucketCloudFrontAccessPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
-        Bucket: SwaggerBucket
+        Bucket:
+          Ref: SwaggerBucket
         PolicyDocument:
           Statement:
             - Action: s3:GetObject
               Effect: Allow
               Resource: 'arn:aws:s3:::#{SwaggerBucket}/*'
               Principal:
-                CanonicalUser: SwaggerDistributionOAI.S3CanonicalUserId
+                CanonicalUser:
+                  Fn::GetAtt: SwaggerDistributionOAI.S3CanonicalUserId
 
     SwaggerDistributionOAI:
       Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
       Properties:
         CloudFrontOriginAccessIdentityConfig:
           Comment: 'Access #{SwaggerBucket} bucket'
+
     UserPool:
       Type: AWS::Cognito::UserPool
       Properties:
-        UserPoolName: swaggerui
+        UserPoolName: ${self:custom.baseName}-swaggerui
         Schema:
           - Name: email
             Required: true
@@ -129,14 +138,16 @@ resources:
     UserPoolDomain:
       Type: AWS::Cognito::UserPoolDomain
       Properties:
-        UserPoolId: UserPool
-        Domain: myapi-swaggerui
+        UserPoolId:
+          Ref: UserPool
+        Domain: ${self:custom.baseName}
 
     SwaggerUIAppClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
         ClientName: SwaggerUI
-        UserPoolId: UserPool
+        UserPoolId:
+          Ref: UserPool
         GenerateSecret: false
         SupportedIdentityProviders:
           - COGNITO
@@ -157,15 +168,18 @@ resources:
         IdentityPoolName: swaggerui
         CognitoIdentityProviders:
           - ProviderName: 'cognito-idp.#{AWS::Region}.amazonaws.com/#{UserPool}'
-            ClientId: SwaggerUIAppClient
+            ClientId:
+              Ref: SwaggerUIAppClient
         AllowUnauthenticatedIdentities: false
 
     SwaggerUIIdentityProviderRoles:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
-        IdentityPoolId: SwaggerUIIdentityProvider
+        IdentityPoolId:
+          Ref: SwaggerUIIdentityProvider
         Roles:
-          authenticated: SwaggerUIAuthRole.Arn
+          authenticated:
+            Fn::GetAtt: SwaggerUIAuthRole.Arn
 
     SwaggerUIAuthRole:
       Type: AWS::IAM::Role
@@ -190,3 +204,7 @@ resources:
                 - Effect: Allow
                   Action: apigateway:GET
                   Resource: 'arn:aws:apigateway:#{AWS::Region}::/restapis/#{ApiGatewayRestApi}/stages/${self:provider.stage}/exports/*'
+Outputs:
+  SwaggerBucketName:
+    Value:
+      Ref: SwaggerBucket

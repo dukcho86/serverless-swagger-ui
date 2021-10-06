@@ -9,7 +9,7 @@
   },
   "private": true,
   "dependencies": {
-    "serverless-cloudformation-sub-variables": "^0.2.1",
+    "@aws-amplify/auth": "^4.3.9",
     "swagger-ui-dist": "^3.52.3"
   },
   "devDependencies": {
@@ -25,17 +25,23 @@
     "@types/node": "14.14.33",
     "@typescript-eslint/eslint-plugin": "~4.28.3",
     "@typescript-eslint/parser": "~4.28.3",
+    "aws-sdk": "^2.1001.0",
     "clean-webpack-plugin": "^4.0.0",
+    "css-loader": "^6.3.0",
     "eslint": "7.22.0",
     "eslint-config-prettier": "8.1.0",
     "jest": "26.2.2",
     "prettier": "^2.3.1",
     "serverless": "^2.29.0",
+    "serverless-cloudformation-sub-variables": "^0.2.1",
     "serverless-offline": "7.0.0",
     "serverless-s3-deploy": "^0.10.1",
     "serverless-scriptable-plugin": "^1.2.1",
+    "style-loader": "^3.3.0",
     "ts-jest": "26.5.5",
     "typescript": "~4.3.5",
-    "webpack": "^5.57.1"
+    "webpack": "^5.57.1",
+    "webpack-cli": "^4.8.0",
+    "webpack-dev-server": "^4.3.1"
   }
 }
