@@ -204,7 +204,3 @@ resources:
                 - Effect: Allow
                   Action: apigateway:GET
                   Resource: 'arn:aws:apigateway:#{AWS::Region}::/restapis/#{ApiGatewayRestApi}/stages/${self:provider.stage}/exports/*'
-Outputs:
-  SwaggerBucketName:
-    Value:
-      Ref: SwaggerBucket

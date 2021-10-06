@@ -161,7 +161,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/myapi/dev/1633548229005-2021-10-06T19:23:49.005Z/hello-world.zip"
+          "S3Key": "serverless/myapi/dev/1633550128524-2021-10-06T19:55:28.524Z/hello-world.zip"
         },
         "Handler": "src/handler.helloWorld",
         "Runtime": "nodejs10.x",
@@ -179,14 +179,14 @@
         "HelloDashworldLogGroup"
       ]
     },
-    "HelloDashworldLambdaVersionFdC19C0wbsmm3xZ2eMdLJhEME2STksruqHDojCbSV8": {
+    "HelloDashworldLambdaVersionhCYhQjDGLxNw5jaN8reTuq5WUjjPonohvLgdZoH4N0": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "HelloDashworldLambdaFunction"
         },
-        "CodeSha256": "9yUulR83LuF+2wXyBhgbpAt9bq4YeR1b6uwBQce0Veo="
+        "CodeSha256": "FkIcpTvpvoaVOtXtwStWeq5fOqR8fenS9UCnrPb39qs="
       }
     },
     "ApiGatewayRestApi": {
@@ -351,7 +351,7 @@
         "HelloDashworldLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1633548227232": {
+    "ApiGatewayDeployment1633550127252": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -627,7 +627,7 @@
     "HelloDashworldLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "HelloDashworldLambdaVersionFdC19C0wbsmm3xZ2eMdLJhEME2STksruqHDojCbSV8"
+        "Ref": "HelloDashworldLambdaVersionhCYhQjDGLxNw5jaN8reTuq5WUjjPonohvLgdZoH4N0"
       },
       "Export": {
         "Name": "sls-myapi-dev-HelloDashworldLambdaFunctionQualifiedArn"
