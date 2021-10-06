@@ -65,3 +65,51 @@ resources:
   Resources:
     SwaggerBucket:
       Type: AWS::S3::Bucket
+    SwaggerDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          Comment: ${self:custom.baseName}-swaggerui
+          HttpVersion: http2
+          Origins:
+            - Id: swaggerS3
+              DomainName: '#{SwaggerBucket.RegionalDomainName}'
+              S3OriginConfig:
+                OriginAccessIdentity: 'origin-access-identity/cloudfront/#{SwaggerDistributionOAI}'
+          DefaultRootObject: index.html
+          DefaultCacheBehavior:
+            TargetOriginId: swaggerS3
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            Compress: true
+            ViewerProtocolPolicy: redirect-to-https
+            ForwardedValues:
+              QueryString: 'false'
+              Cookies:
+                Forward: none
+          PriceClass: PriceClass_100
+          ViewerCertificate:
+            CloudFrontDefaultCertificate: 'true'
+
+    SwaggerBucketCloudFrontAccessPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: SwaggerBucket
+        PolicyDocument:
+          Statement:
+            - Action: s3:GetObject
+              Effect: Allow
+              Resource: 'arn:aws:s3:::#{SwaggerBucket}/*'
+              Principal:
+                CanonicalUser: SwaggerDistributionOAI.S3CanonicalUserId
+
+    SwaggerDistributionOAI:
+      Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+      Properties:
+        CloudFrontOriginAccessIdentityConfig:
+          Comment: 'Access #{SwaggerBucket} bucket'

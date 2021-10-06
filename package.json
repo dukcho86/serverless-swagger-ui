@@ -9,6 +9,7 @@
   },
   "private": true,
   "dependencies": {
+    "serverless-cloudformation-sub-variables": "^0.2.1",
     "swagger-ui-dist": "^3.52.3"
   },
   "devDependencies": {
