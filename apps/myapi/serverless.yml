@@ -10,7 +10,8 @@ custom:
   project: swaggerui
   baseName: ${self:custom.project}-${self:provider.stage}-${self:service}
 
-  scriptHooks:
+  scriptable:
+    hooks:
     after:aws:deploy:deploy:updateStack:
       - apps/myapi/generateConfigFile.js
       - webpack --config apps/myapi/webpack.config.js --mode production --progress
@@ -21,7 +22,7 @@ custom:
       - bucket:
           Ref: SwaggerBucket
         files:
-          - source: dist
+          - source: dist/apps/myapi/myapidist
             empty: true
             globs: '**/*'
 

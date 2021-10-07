@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.ts',
+  entry: './apps/myapi/src/index.ts',
   module: {
     rules: [
       {
@@ -20,9 +20,12 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js', '.ts'],
+    fallback: {
+      path: require.resolve('path-browserify'),
+    },
   },
   output: {
-    path: __dirname + '/dist',
+    path: __dirname + 'dist',
     publicPath: '/',
     filename: 'bundle.js',
   },
@@ -30,7 +33,7 @@ module.exports = {
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
       title: 'Example API',
-      template: 'src/index.ejs',
+      template: './apps/myapi/src/index.ejs',
     }),
   ],
   performance: {
