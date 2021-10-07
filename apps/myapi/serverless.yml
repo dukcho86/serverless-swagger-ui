@@ -1,4 +1,4 @@
-service: myapi
+service: swaggerui
 frameworkVersion: '>=1.1.0'
 plugins:
   - serverless-offline
@@ -7,13 +7,13 @@ plugins:
   - serverless-cloudformation-sub-variables
 
 custom:
-  project: myapi
+  project: swaggerui
   baseName: ${self:custom.project}-${self:provider.stage}-${self:service}
 
   scriptHooks:
     after:aws:deploy:deploy:updateStack:
-      - webpack --mode production --progress
-      - generateConfigFile.js
+      - apps/myapi/generateConfigFile.js
+      - webpack --config apps/myapi/webpack.config.js --mode production --progress
 
   assets:
     auto: true
@@ -36,11 +36,11 @@ provider:
 
   runtime: nodejs10.x
 functions:
-  hello-world:
-    handler: src/handler.helloWorld
+  hello-swagger:
+    handler: src/handler.helloSwagger
     events:
       - http:
-          path: hello-world
+          path: hello-swagger
           method: GET
           cors: true
           integration: mock
@@ -56,7 +56,7 @@ functions:
               201:
                 pattern: ''
       - http:
-          path: hello-world
+          path: hello-swagger
           cors: true
           method: POST
           integration: mock

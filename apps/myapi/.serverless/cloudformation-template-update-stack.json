@@ -161,7 +161,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/myapi/dev/1633550128524-2021-10-06T19:55:28.524Z/hello-world.zip"
+          "S3Key": "serverless/myapi/dev/1633552407120-2021-10-06T20:33:27.120Z/hello-world.zip"
         },
         "Handler": "src/handler.helloWorld",
         "Runtime": "nodejs10.x",
@@ -351,7 +351,7 @@
         "HelloDashworldLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1633550127252": {
+    "ApiGatewayDeployment1633552401850": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
