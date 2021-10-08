@@ -2,9 +2,10 @@ service: swaggerui
 frameworkVersion: '>=1.1.0'
 plugins:
   - serverless-offline
-  - serverless-scriptable-plugin
-  - serverless-s3-deploy
   - serverless-cloudformation-sub-variables
+  - serverless-s3-deploy
+  - serverless-s3-remover
+  - serverless-scriptable-plugin
 
 custom:
   project: swaggerui
@@ -12,30 +13,35 @@ custom:
 
   scriptable:
     hooks:
-    after:aws:deploy:deploy:updateStack:
-      - apps/myapi/generateConfigFile.js
-      - webpack --config apps/myapi/webpack.config.js --mode production --progress
+      after:aws:deploy:deploy:updateStack:
+        - apps/myapi/generateConfigFile.js
+        - webpack --config apps/myapi/webpack.config.js --mode production --progress
 
   assets:
     auto: true
     targets:
-      - bucket:
-          Ref: SwaggerBucket
+      - bucket: !Ref SwaggerBucket
         files:
-          - source: dist/apps/myapi/myapidist
+          - source: apps/myapi/dist
             empty: true
             globs: '**/*'
+
+  remover:
+    buckets:
+      # empty the Swagger UI S3 bucket content when removing the service so the bucket can be removed
+      - ${cf:${self:custom.baseName}.SwaggerBucketName, ''}
 
 package:
   individually: true
   excludeDevDependencies: false
+
 provider:
   name: aws
   region: us-east-2
   stage: ${opt:stage, 'dev'}
   stackName: ${self:custom.baseName}
+  runtime: nodejs14.x
 
-  runtime: nodejs10.x
 functions:
   hello-swagger:
     handler: src/handler.helloSwagger
@@ -49,10 +55,7 @@ functions:
             template:
               application/json: '{"statusCode": 200}'
           response:
-            template: >
-              {
-                "greeting": "Hello $input.params('name')!"
-              }
+            template: '{"greeting": "hello"}'
             statusCodes:
               201:
                 pattern: ''
@@ -98,26 +101,24 @@ resources:
             Compress: true
             ViewerProtocolPolicy: redirect-to-https
             ForwardedValues:
-              QueryString: 'false'
+              QueryString: false
               Cookies:
                 Forward: none
           PriceClass: PriceClass_100
           ViewerCertificate:
-            CloudFrontDefaultCertificate: 'true'
+            CloudFrontDefaultCertificate: true
 
     SwaggerBucketCloudFrontAccessPolicy:
       Type: AWS::S3::BucketPolicy
       Properties:
-        Bucket:
-          Ref: SwaggerBucket
+        Bucket: !Ref SwaggerBucket
         PolicyDocument:
           Statement:
             - Action: s3:GetObject
               Effect: Allow
               Resource: 'arn:aws:s3:::#{SwaggerBucket}/*'
               Principal:
-                CanonicalUser:
-                  Fn::GetAtt: SwaggerDistributionOAI.S3CanonicalUserId
+                CanonicalUser: !GetAtt SwaggerDistributionOAI.S3CanonicalUserId
 
     SwaggerDistributionOAI:
       Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
@@ -139,16 +140,14 @@ resources:
     UserPoolDomain:
       Type: AWS::Cognito::UserPoolDomain
       Properties:
-        UserPoolId:
-          Ref: UserPool
+        UserPoolId: !Ref UserPool
         Domain: ${self:custom.baseName}
 
     SwaggerUIAppClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
         ClientName: SwaggerUI
-        UserPoolId:
-          Ref: UserPool
+        UserPoolId: !Ref UserPool
         GenerateSecret: false
         SupportedIdentityProviders:
           - COGNITO
@@ -169,18 +168,15 @@ resources:
         IdentityPoolName: swaggerui
         CognitoIdentityProviders:
           - ProviderName: 'cognito-idp.#{AWS::Region}.amazonaws.com/#{UserPool}'
-            ClientId:
-              Ref: SwaggerUIAppClient
+            ClientId: !Ref SwaggerUIAppClient
         AllowUnauthenticatedIdentities: false
 
     SwaggerUIIdentityProviderRoles:
       Type: AWS::Cognito::IdentityPoolRoleAttachment
       Properties:
-        IdentityPoolId:
-          Ref: SwaggerUIIdentityProvider
+        IdentityPoolId: !Ref SwaggerUIIdentityProvider
         Roles:
-          authenticated:
-            Fn::GetAtt: SwaggerUIAuthRole.Arn
+          authenticated: !GetAtt SwaggerUIAuthRole.Arn
 
     SwaggerUIAuthRole:
       Type: AWS::IAM::Role
@@ -194,7 +190,7 @@ resources:
               Action: sts:AssumeRoleWithWebIdentity
               Condition:
                 StringEquals:
-                  cognito-identity.amazonaws.com:aud: SwaggerUIIdentityProvider
+                  cognito-identity.amazonaws.com:aud: !Ref SwaggerUIIdentityProvider
                 ForAnyValue:StringLike:
                   cognito-identity.amazonaws.com:amr: authenticated
         Policies:
@@ -205,3 +201,7 @@ resources:
                 - Effect: Allow
                   Action: apigateway:GET
                   Resource: 'arn:aws:apigateway:#{AWS::Region}::/restapis/#{ApiGatewayRestApi}/stages/${self:provider.stage}/exports/*'
+  # save bucket name in outputs so it can be found when removing the service
+  Outputs:
+    SwaggerBucketName:
+      Value: !Ref SwaggerBucket

@@ -78,7 +78,8 @@
             "config": "apps/myapi/serverless.yml",
             "location": "dist/apps/myapi",
             "package": "dist/apps/myapi",
-            "stage": "dev"
+            "stage": "dev",
+            "packager": "npm"
           }
         },
         "destroy": {

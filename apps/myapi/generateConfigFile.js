@@ -48,7 +48,7 @@ const getPhysicalId = (stackResources, logicalId) => {
 };
 
 const writeConfigFile = (config) => {
-  fs.writeFileSync('./src/config.json', JSON.stringify(config));
+  fs.writeFileSync(__dirname + '/src/config.json', JSON.stringify(config));
 };
 
 listStackResources().then(createConfig).then(writeConfigFile);
