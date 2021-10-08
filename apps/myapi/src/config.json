@@ -1,0 +1,1 @@
+{"region":"us-east-2","cognito":{"identityPoolId":"us-east-2:80e9957c-0e1e-4b08-bdbb-2e5437ab8b6e","userPoolId":"us-east-2_7cz9M9CiF","userPoolWebClientId":"3l2kcp2e9svligrc16dl7ndcfr","oauthDomain":"swaggerui-dev-swaggerui.auth.us-east-2.amazoncognito.com"},"apiGateway":{"restApiId":"lfrxb143s6","stageName":"dev"}}
